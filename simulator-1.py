@@ -107,6 +107,7 @@ class Instruction(object):
         self.exitCycle = [0]*4
         self.currentUnit = 'No'
         self.currentSubUnit = -1
+        self.hasRead = False
 
     def __repr__(self):
         raw = "N"
@@ -124,41 +125,67 @@ class Instruction(object):
         #return "\t\t%s %s %s %s %s %s %s %s" % (self.exitCycle[0], self.exitCycle[1], self.exitCycle[2], self.exitCycle[3], raw, war, waw, struct)
         return "\t\t[%s-%s]\t\t%s,%s  %s,%s  %s,%s  %s,%s  %s  %s  %s  %s" % (self.currentUnit, self.currentSubUnit, self.entryCycle[0],self.exitCycle[0], self.entryCycle[1],self.exitCycle[1], self.entryCycle[2],self.exitCycle[2], self.entryCycle[3],self.exitCycle[3], raw, war, waw, struct)
 
+    def enterFetch(self, clock, cpu):
+        self.currentUnit = 'Fet'
+        self.currentSubUnit = 1
+        self.entryCycle[0] = clock
+        cpu.fetch.isBusy = True
+
+    def exitFetch(self, clock, cpu):
+        self.exitCycle[0] = clock - 1
+        cpu.fetch.isBusy = False
+
+    def enterIU(self, clock, cpu):
+        self.currentUnit = 'IU'
+        self.currentSubUnit = 1
+        self.entryCycle[2] = clock
+        cpu.alu.intUnit.isBusy = True
+
+    def exitIU(self, clock, cpu):
+        cpu.alu.intUnit.isBusy = False
+
+    def enterMem(self, clock, cpu):
+        self.currentUnit = 'Mem'
+        self.currentSubUnit = 1
+        cpu.alu.memUnit.isBusy = True
+
+    def exitMem(self, clock, cpu):
+        self.exitCycle[2] = clock - 1
+        cpu.alu.memUnit.isBusy = False
+
+    def enterWB(self, clock, cpu):
+        self.currentUnit = 'WB'
+        self.currentSubUnit = 1
+        self.entryCycle[3] = clock
+        cpu.writeback.isBusy = True        
+
     def update(self, clock, cpu):
         if (self.currentUnit == 'No'):
             if (cpu.fetch.isBusy):
                 self.struct |= True
-                return False
-            self.currentUnit = 'Fet'
-            self.currentSubUnit = 1
-            self.entryCycle[0] = clock
-            cpu.fetch.isBusy = True
+            else:
+                self.enterFetch(clock, cpu)
             return False
         if (self.currentUnit == 'Fet'):
             if (self.currentSubUnit == cpu.fetch.execCycles):
                 if (cpu.decode.isBusy):
                     self.struct |= True
-                    return False
-                self.exitCycle[0] = clock - 1
-                cpu.fetch.isBusy = False
-                self.currentUnit = 'Dec'
-                self.currentSubUnit = 1
-                self.entryCycle[1] = clock
-                cpu.decode.isBusy = True
+                else:
+                    self.exitFetch(clock, cpu)
+                    self.enterDecode(clock, cpu)
             else:
                 self.currentSubUnit += 1
             return False
         if (self.currentUnit == 'Dec'):
+            if (not self.hasRead):
+                if (not self.tryRead(cpu)):
+                    return False
             if (self.currentSubUnit == cpu.decode.execCycles):
                 if (cpu.alu.intUnit.isBusy):
                     self.struct |= True
-                    return False
-                self.exitCycle[1] = clock - 1
-                cpu.decode.isBusy = False
-                self.currentUnit = 'IU'
-                self.currentSubUnit = 1
-                self.entryCycle[2] = clock
-                cpu.alu.intUnit.isBusy = True
+                else:
+                    self.exitDecode(clock, cpu)
+                    self.enterIU(clock, cpu)
             else:
                 self.currentSubUnit += 1
             return False
@@ -166,11 +193,9 @@ class Instruction(object):
             if (self.currentSubUnit == cpu.alu.intUnit.execCycles):
                 if (cpu.alu.memUnit.isBusy):
                     self.struct |= True
-                    return False
-                cpu.alu.intUnit.isBusy = False
-                self.currentUnit = 'Mem'
-                self.currentSubUnit = 1
-                cpu.alu.memUnit.isBusy = True
+                else:
+                    self.exitIU(clock, cpu)
+                    self.enterMem(clock, cpu)
             else:
                 self.currentSubUnit += 1
             return False
@@ -178,33 +203,70 @@ class Instruction(object):
             if (self.currentSubUnit == cpu.alu.memUnit.execCycles):
                 if (cpu.writeback.isBusy):
                     self.struct |= True
-                    return False
-                self.exitCycle[2] = clock - 1
-                cpu.alu.memUnit.isBusy = False
-                self.currentUnit = 'WB'
-                self.currentSubUnit = 1
-                self.entryCycle[3] = clock
-                cpu.writeback.isBusy = True
+                else:
+                    self.exitMem(clock, cpu)
+                    self.enterWB(clock, cpu)
             else:
                 self.currentSubUnit += 1
             return False
         if (self.currentUnit == 'WB'):
-            self.exitCycle[3] = clock - 1
-            cpu.writeback.isBusy = False
-            return True
+            if (self.currentSubUnit == cpu.writeback.execCycles):
+                self.exitWB(clock, cpu)
+                return True
+            else:
+                self.currentSubUnit += 1
+                return False
 
-class ThreeRegInstruction(Instruction):
-    def __init__(self, name, destName, src1Name, src2Name):
+class DestRegInstruction(Instruction):
+    def __init__(self, name, destName):
         Instruction.__init__(self, name)
         self.destName = destName
+        self.destVal = 0
+
+    def exitWB(self, clock, cpu):
+        self.exitCycle[3] = clock - 1
+        cpu.writeback.isBusy = False
+        cpu.registerFile.registers[self.destName].isBusy = False
+        #print "Marked " + self.destName + " " + str(cpu.registerFile.registers[self.destName].isBusy)
+
+class ThreeRegInstruction(DestRegInstruction):
+    def __init__(self, name, destName, src1Name, src2Name):
+        DestRegInstruction.__init__(self, name, destName)
         self.src1Name = src1Name
         self.src2Name = src2Name
-        self.destVal = 0
         self.src1Val = 0
         self.src2Val = 0
 
     def __repr__(self):
         return "%s %s, %s, %s %s" % (self.name, self.destName, self.src1Name, self.src2Name, Instruction.__repr__(self))
+
+    def tryRead(self, cpu):
+        print self.destName, cpu.registerFile.registers[self.destName].isBusy, self.src1Name, cpu.registerFile.registers[self.src1Name].isBusy, self.src2Name, cpu.registerFile.registers[self.src2Name].isBusy, "hasread", self.hasRead
+        if (self.hasRead):
+            return True
+        if (not (cpu.registerFile.registers[self.destName].isBusy) and
+            not (cpu.registerFile.registers[self.src1Name].isBusy) and
+            not (cpu.registerFile.registers[self.src2Name].isBusy)):
+            cpu.registerFile.registers[self.destName].isBusy = True
+            self.src1Val = cpu.registerFile.registers[self.src1Name].val
+            self.src2Val = cpu.registerFile.registers[self.src2Name].val
+            self.hasRead = True
+            print "in if"
+        else:
+            print "in else"
+            self.raw += True
+        return not self.hasRead
+
+    def enterDecode(self, clock, cpu):        
+        self.currentUnit = 'Dec'
+        self.currentSubUnit = 1
+        self.entryCycle[1] = clock
+        cpu.decode.isBusy = True
+        ret = self.tryRead(cpu)
+
+    def exitDecode(self, clock, cpu):
+        self.exitCycle[1] = clock - 1
+        cpu.decode.isBusy = False
 
 class DADD(ThreeRegInstruction):
     def __init__(self, name, destName, src1Name, src2Name):
@@ -262,18 +324,40 @@ class OR(ThreeRegInstruction):
     def executeInst(self):
         self.destVal = self.src1Val or self.src2Val
 
-class TwoRegOneImmInstruction(Instruction):
+class TwoRegOneImmInstruction(DestRegInstruction):
     def __init__(self, name, destName, srcName, imm):
-        Instruction.__init__(self, name)
-        self.destName = destName
+        DestRegInstruction.__init__(self, name, destName)
         self.srcName = srcName
-        self.destVal = 0
         self.srcVal = 0
         self.imm = imm
 
     def __repr__(self):
         return "%s %s, %s, %s %s" % (self.name, self.destName, self.srcName, self.imm, Instruction.__repr__(self))
         
+    def tryRead(self, cpu):
+        print self.destName, cpu.registerFile.registers[self.destName].isBusy, self.srcName, cpu.registerFile.registers[self.srcName].isBusy
+        if (self.hasRead):
+            return True
+        if (not (cpu.registerFile.registers[self.destName].isBusy) and
+            not (cpu.registerFile.registers[self.srcName].isBusy)):
+            cpu.registerFile.registers[self.destName].isBusy = True
+            self.srcVal = cpu.registerFile.registers[self.srcName].val
+            self.hasRead = True
+        else:
+            self.raw += True
+        return not self.hasRead
+
+    def enterDecode(self, clock, cpu):        
+        self.currentUnit = 'Dec'
+        self.currentSubUnit = 1
+        self.entryCycle[1] = clock
+        cpu.decode.isBusy = True
+        ret = self.tryRead(cpu)
+
+    def exitDecode(self, clock, cpu):
+        self.exitCycle[1] = clock - 1
+        cpu.decode.isBusy = False
+
 class DADDI(TwoRegOneImmInstruction):
     def __init__(self, name, destName, srcName, imm):
         TwoRegOneImmInstruction.__init__(self, name, destName, srcName, imm)
@@ -386,31 +470,31 @@ class HLT(Instruction):
         pass
 
 class Register():
-    def __init__(self, name, val, isBusy):
-        self.name = name
+    def __init__(self, val, isBusy):
         self.val = val
         self.isBusy = isBusy
 
     def __repr__(self):
-        return "\nName: %s\nValue: %s\nBusy: %s" % (self.name, self.val, self. isBusy)
+        return "\nValue: %s\nBusy: %s" % (self.val, self. isBusy)
 
 class RegisterFile():
     def __init__(self, regFile):
         self.regFileSize = REG_FILE_SIZE
-        self.registers = []
+        self.registers = {}
         self.parseRegisters(regFile)
 
     def __repr__(self):
         registers = ""
-        for i in range(len(self.registers)):
-            registers = registers + str(self.registers[i]) + "\n"
-        return "\n* RegisterFile *\n%s" % (registers)
+        for regName, reg in self.registers.items():
+            registers = registers + "Name: " + regName + "\n" + str(reg) + "\n"
+        return "\n* RegisterFile *\n%s" % (registers)    
 
     def parseRegisters(self, regFile):
         lines = readLines(regFile)
         count = 0
         for line in lines:
-            self.registers.append(Register("R"+str(count), bitsToVal(line), False))
+            self.registers['r'+str(count)] = Register(bitsToVal(line), False)
+            self.registers['f'+str(count)] = Register(0, False)
             count += 1
 
 class Unit():
@@ -555,7 +639,7 @@ class Computer():
 
 def main(instFile, dataFile, regFile, configFile, resultFile="result.txt"):
     computer = Computer(instFile, dataFile, regFile, configFile)
-    print computer
+    #print computer
     computer.execute()
 
 if __name__ == "__main__":
