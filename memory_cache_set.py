@@ -2,7 +2,7 @@
 Sets of blocks in cache.
 """
 
-from cache_block import *
+from memory_cache_block import *
 from computer import *
 
 
