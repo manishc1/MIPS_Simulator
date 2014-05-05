@@ -26,6 +26,7 @@ class Data_Cache:
             Data_Cache.cache_sets.append(Cache_Set(id, NUMBER_OF_CACHE_BLOCKS / NUMBER_OF_CACHE_SETS))
 
 
+    @classmethod
     def read(self, location):
         """
         Read from the location.
@@ -38,8 +39,8 @@ class Data_Cache:
         for id in range(NUMBER_OF_CACHE_SETS):
             if Data_Cache.lookup_address_in_set(location, id):
                 Data_Cache.hits += 1
-                Data_Cache.use_for_lru(block_no, id)
-                return HIT, Data_Cache.cache_sets[i].cache_block[block_id].words[(location & 12) >> NUMBER_OF_CACHE_SETS], ACCESS_TIME['DCACHE']
+                Data_Cache.use_for_lru(block_id, id)
+                return HIT, Data_Cache.cache_sets[id].cache_block[block_id].words[(location & 12) >> NUMBER_OF_CACHE_SETS], ACCESS_TIME['DCACHE']
 
         set_id = Data_Cache.cache_block_lru[block_id]
 
@@ -51,6 +52,7 @@ class Data_Cache:
         return MISS, Data_Cache.cache_sets[set_id].cache_block[block_id].words[(location & 12) >> NUMBER_OF_CACHE_SETS], read_cycles
 
 
+    @classmethod
     def write(self, location, data, isWritable = True):
         """
         Write to the data cache.
@@ -77,6 +79,7 @@ class Data_Cache:
         return MISS, write_cycles + 2 * (ACCESS_TIME['MEMORY'] + ACCESS_TIME['DCACHE'])
 
 
+    @classmethod
     def lookup_address_in_set(self, location, id):
         """
         Check if the address is present in the set
@@ -84,12 +87,13 @@ class Data_Cache:
         tag = location >> 5
         block_id = (location >> NUMBER_OF_CACHE_BLOCKS) % NUMBER_OF_CACHE_SETS
 
-        if ((Data_Cache.sets[id].check_block_for_validity(block_id)) and (Data_Cache.sets[id].get_block_tag(block_id) == tag)):
+        if ((Data_Cache.cache_sets[id].check_block_for_validity(block_id)) and (Data_Cache.cache_sets[id].get_block_tag(block_id) == tag)):
             return True
 
         return False
 
 
+    @classmethod
     def use_for_lru(self, block_id, set_id):
         """
         Update the LRU for the set.
@@ -100,6 +104,7 @@ class Data_Cache:
             Data_Cache.cache_block_lru[block_id] = 0
 
 
+    @classmethod
     def memory_write_back(self, set_id, block_id):
         """
         Write Back from cache to memory.
@@ -111,6 +116,7 @@ class Data_Cache:
         return 2 * (ACCESS_TIME['MEMORY'] + ACCESS_TIME['DCACHE'])
 
 
+    @classmethod
     def prepare_block(self, location, set_id):
         """
         Prepare the block
@@ -120,11 +126,12 @@ class Data_Cache:
         Data_Cache.cache_sets[set_id].cache_block[block_id].valid_bit = True
         Data_Cache.use_for_lru(block_id, set_id)
 
-        base_address = MEMORY_BASE_ADDRESS + ((location >> 4) << 4)
+        base_address = DATA_MEMORY_BASE_ADDRESS + ((location >> 4) << 4)
         for id in range(CACHE_BLOCK_SIZE):
             Data_Cache.cache_sets[set_id].cache_block[block_id].words[id] = DATA[base_address + (id * WORD_SIZE)]
 
 
+    @classmethod
     def write_data(self, location, set_id, data, isWritable):
         block_id = (address >> NUMBER_OF_CACHE_BLOCKS) % NUMBER_OF_CACHE_SETS
         Data_Cache.cache_sets[set_id].cache_block[block_id].dirty_bit = True
