@@ -25,7 +25,7 @@ class Output():
         """
         string = str(self.instruction) + '\t'
 
-        for stage in ['ID', 'IF', 'EX', 'WB']:
+        for stage in STAGES:
             if (self.cycles[stage] != 0):
                 string += str(self.cycles[stage]) + '\t'
             else:
