@@ -86,3 +86,8 @@ STAGE_FLAG = {
     'IBUS': AVAILABLE,
     'DBUS': AVAILABLE
     }
+
+
+
+# Formatting constants
+INSTRUCTION_LEFT_JUSTIFY = 31

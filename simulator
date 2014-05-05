@@ -7,8 +7,9 @@ Entry point for the simulation.
 from collections import deque
 from computer import *
 from data_cache import *
-from instruction_container import *
 from instruction_cache import *
+from instruction_container import *
+from printer import *
 from scanner import *
 
 import operator
@@ -88,40 +89,6 @@ def organize(old_instruction_containers):
     return new_instruction_containers
 
 
-def print_output():
-    """
-    Print the final output.
-    """
-    res = sorted(output, key=lambda x: x.cycles[STAGES[0]])
-    res[len(res) - 1].cycles[STAGES[1]] = 0
-
-    op = ''
-    op += '-' * 94 + '\n'
-    op += '\tInstruction\t\tFT\tID\tEX\tWB\tRAW\tWAR\tWAW\tStruct\n'
-    op += '-' * 94 + '\n'
-
-    for i in range(len(res)):
-        found_label = False
-        for label, address in LABEL.items():
-            if res[i].instruction.location == address:
-                found_label = True
-                op += label + ':\t'
-        if not found_label:
-            op += '\t'
-        op += str(res[i]) + '\n'
-
-    op += '-' * 94 + '\n'
-    op += '\nTotal number of access requests for instruction cache: ' + str(Instruction_Cache.requests)
-    op += '\nNumber of instruction cache hits: ' + str(Instruction_Cache.hits)
-    op += '\nTotal number of access requests for data cache: ' + str(Data_Cache.requests)
-    op += '\nNumber of data cache hits: ' + str(Data_Cache.hits)
-
-    #file = open(filename, 'w')
-    #file.write(output)
-    #file.close()
-    print op
-
-
 def init_cache():
     """
     Initialize instruction and data cache.
@@ -161,8 +128,6 @@ def simulate():
             active_instruction_containers.appendleft(Instruction_Container(INSTRUCTIONS[REGISTERS['PC']], clock_cycle))
             REGISTERS['PC'] += 1
 
-    print_output()
-
 
 def main(instFile, dataFile, regFile, configFile, resultFile):
     """
@@ -178,6 +143,12 @@ def main(instFile, dataFile, regFile, configFile, resultFile):
         exit()
 
     simulate()
+
+    try:
+        Printer.print_output(resultFile, output)
+    except Exception as e:
+        print 'Printing Error: ' + str(e)
+        exit()
 
         
 if __name__ == "__main__":

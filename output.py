@@ -19,22 +19,30 @@ class Output():
         self.hazards = {'RAW': False, 'WAR': False, 'WAW': False, 'Struct': False}
 
 
-    def __str__(self):
+    def toString(self, isLast):
         """
         Convert to string representation.
         """
-        string = str(self.instruction) + '\t'
+        string = ''
+        for label, location in LABEL.items():
+            if (self.instruction.location == location):
+                string += label + ': '
+        string += str(self.instruction)
+        string = string.ljust(INSTRUCTION_LEFT_JUSTIFY)
 
         for stage in STAGES:
             if (self.cycles[stage] != 0):
-                string += str(self.cycles[stage]) + '\t'
+                string += '\t' + str(self.cycles[stage]) + '\t'
             else:
-                string += '\t'
+                string += '\t\t'
+
+        if (isLast):
+            return string
 
         for hazard in HAZARDS:
             if (self.hazards[hazard]):
-                string += 'Y\t'
+                string += '\tY\t'
             else:
-                string += 'N\t'
+                string += '\tN\t'
 
         return string
