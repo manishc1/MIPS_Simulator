@@ -2,6 +2,9 @@
 Stores the result of the instruction.
 """
 
+from computer import *
+
+
 class Output():
     """
     Class to present the resulting output.
@@ -28,7 +31,7 @@ class Output():
             else:
                 string += '\t'
 
-        for hazard in ['RAW', 'WAR', 'WAW', 'Struct']:
+        for hazard in HAZARDS:
             if (self.hazards[hazard]):
                 string += 'Y\t'
             else:

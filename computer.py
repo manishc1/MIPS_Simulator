@@ -5,6 +5,15 @@ Defines the world of the MIPS computer that is being simulating.
 from config import *
 
 
+# Some macro definitions
+AVAILABLE = False
+OCCUPIED = True
+
+HIT = True
+MISS = False
+
+
+
 # ALU Instructions
 INTEGER_ALU_INSTRUCTIONS = ['dadd', 'dsub', 'and', 'or']
 FLOAT_ALU_INSTRUCTIONS = ['add.d', 'sub.d', 'mul.d', 'div.d']
@@ -29,6 +38,16 @@ DESTFUL_INSTRUCTIONS = LOAD_INSTRUCTIONS + ALU_INSTRUCTIONS
 
 
 
+# Hazards
+HAZARDS = ['RAW', 'WAR', 'WAW', 'Struct']
+
+
+
+# Stages
+['ID', 'IF', 'EX', 'WB']
+
+
+
 # Some computer constants
 DATA_MEMORY_BASE_ADDRESS = 256
 WORD_SIZE = 4
@@ -47,12 +66,15 @@ INSTRUCTIONS = []
 LABEL = {}
 REGISTERS = {'PC': 0, 'FLUSH': False}
 REGISTER_FLAG = {}
-
-
-
-# Some macro definitions
-AVAILABLE = False
-BUSY = True
-
-HIT = True
-MISS = False
+STAGE_FLAG = {
+    'IF': AVAILABLE
+    'ID': AVAILABLE
+    'IU': AVAILABLE
+    'MEM': AVAILABLE
+    'FP_ADD': AVAILABLE
+    'FP_MUL': AVAILABLE
+    'FP_DIV': AVAILABLE
+    'WB': AVAILABLE
+    'IBUS': AVAILABLE
+    'DBU': AVAILABLE
+    }
