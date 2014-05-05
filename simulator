@@ -15,6 +15,8 @@ import operator
 import sys
 
 
+output = []
+
 
 def write_back_organize(new_instruction_containers, exe_instruction_containers):
     priority = {}
@@ -86,6 +88,40 @@ def organize(old_instruction_containers):
     return new_instruction_containers
 
 
+def print_output():
+    """
+    Print the final output.
+    """
+    res = sorted(output, key=lambda x: x.cycles[STAGES[0]])
+    res[len(res) - 1].cycles[STAGES[1]] = 0
+
+    op = ''
+    op += '-' * 94 + '\n'
+    op += '\tInstruction\t\tFT\tID\tEX\tWB\tRAW\tWAR\tWAW\tStruct\n'
+    op += '-' * 94 + '\n'
+
+    for i in range(len(res)):
+        found_label = False
+        for label, address in LABEL.items():
+            if res[i].instruction.location == address:
+                found_label = True
+                op += label + ':\t'
+        if not found_label:
+            op += '\t'
+        op += str(res[i]) + '\n'
+
+    op += '-' * 94 + '\n'
+    op += '\nTotal number of access requests for instruction cache: ' + str(Instruction_Cache.requests)
+    op += '\nNumber of instruction cache hits: ' + str(Instruction_Cache.hits)
+    op += '\nTotal number of access requests for data cache: ' + str(Data_Cache.requests)
+    op += '\nNumber of data cache hits: ' + str(Data_Cache.hits)
+
+    #file = open(filename, 'w')
+    #file.write(output)
+    #file.close()
+    print op
+
+
 def init_cache():
     """
     Initialize instruction and data cache.
@@ -103,7 +139,6 @@ def simulate():
     clock_cycle = 1
     REGISTERS['PC'] = 1
     
-    output = []
     active_instruction_containers = deque([Instruction_Container(INSTRUCTIONS[0], clock_cycle)])
 
     while (len(active_instruction_containers) > 0):
@@ -112,10 +147,9 @@ def simulate():
 
         while (len(active_instruction_containers) > 0):
             ic = active_instruction_containers.pop()
-            if (ic.keep_executing()):
+            if (ic.keep_executing()):                
                 future_instruction_containers.appendleft(ic)
             else:
-                print ic.output
                 output.append(ic.output)
 
         active_instruction_containers = future_instruction_containers
@@ -127,14 +161,7 @@ def simulate():
             active_instruction_containers.appendleft(Instruction_Container(INSTRUCTIONS[REGISTERS['PC']], clock_cycle))
             REGISTERS['PC'] += 1
 
-        """
-        temp = deque([])
-        while(len(active_instruction_containers)>0):
-            ic = active_instruction_containers.pop()
-            print ic.output
-            temp.appendleft(ic)
-        active_instruction_containers = temp"""
-        #print_output(output)
+    print_output()
 
 
 def main(instFile, dataFile, regFile, configFile, resultFile):
@@ -142,11 +169,10 @@ def main(instFile, dataFile, regFile, configFile, resultFile):
     Scan the files and issue simulation.
     """
     try:
-        scanner = Scanner()
-        scanner.scan_instructions(instFile)
-        scanner.scan_data(dataFile)
-        scanner.scan_registers(regFile)
-        scanner.scan_configuration(configFile)
+        Scanner.scan_instructions(instFile)
+        Scanner.scan_data(dataFile)
+        Scanner.scan_registers(regFile)
+        Scanner.scan_configuration(configFile)
     except Exception as e:
         print 'Scanning Error: ' + str(e)
         exit()
