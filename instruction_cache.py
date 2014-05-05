@@ -29,7 +29,7 @@ class InstructionCache():
         """
         InstructionCache.requests += 1
         tag = location >> 6
-        block_id = (locatoin >> NUMBER_OF_CACHE_BLOCKS) % CACHE_BLOCK_SIZE
+        block_id = (location >> NUMBER_OF_CACHE_BLOCKS) % CACHE_BLOCK_SIZE
 
         if ((InstructionCache.cache_block[block_id].valid_bit == True) and
             (InstructionCache.cache_block[block_id].tag == tag)):
