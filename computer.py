@@ -12,6 +12,8 @@ OCCUPIED = True
 HIT = True
 MISS = False
 
+MAX = 100
+
 
 
 # ALU Instructions
@@ -44,7 +46,7 @@ HAZARDS = ['RAW', 'WAR', 'WAW', 'Struct']
 
 
 # Stages
-['ID', 'IF', 'EX', 'WB']
+STAGES = ['ID', 'IF', 'EX', 'WB']
 
 
 
@@ -57,6 +59,7 @@ WORD_SIZE = 4
 # Cache constants
 CACHE_BLOCK_SIZE = 4
 NUMBER_OF_CACHE_BLOCKS = 4
+NUMBER_OF_CACHE_SETS = 2
 
 
 
@@ -67,14 +70,14 @@ LABEL = {}
 REGISTERS = {'PC': 0, 'FLUSH': False}
 REGISTER_FLAG = {}
 STAGE_FLAG = {
-    'IF': AVAILABLE
-    'ID': AVAILABLE
-    'IU': AVAILABLE
-    'MEM': AVAILABLE
-    'FP_ADD': AVAILABLE
-    'FP_MUL': AVAILABLE
-    'FP_DIV': AVAILABLE
-    'WB': AVAILABLE
-    'IBUS': AVAILABLE
-    'DBU': AVAILABLE
+    'IF': AVAILABLE,
+    'ID': AVAILABLE,
+    'IU': AVAILABLE,
+    'MEM': AVAILABLE,
+    'FP_ADD': AVAILABLE,
+    'FP_MUL': AVAILABLE,
+    'FP_DIV': AVAILABLE,
+    'WB': AVAILABLE,
+    'IBUS': AVAILABLE,
+    'DBUS': AVAILABLE
     }
