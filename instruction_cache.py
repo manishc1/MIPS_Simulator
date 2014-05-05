@@ -6,7 +6,7 @@ from computer import *
 from memory_cache_block import *
 
 
-class Instruction_Cache():
+class Instruction_Cache:
     """
     Class for the instruction cache.
     """
@@ -23,6 +23,7 @@ class Instruction_Cache():
             Instruction_Cache.cache_block.append(Cache_Block(id, CACHE_BLOCK_SIZE))
 
 
+    @classmethod
     def read(self, location):
         """
         Read instruction at location.
