@@ -1,4 +1,9 @@
+"""
+Representation details of an instructions.
+"""
+
 from computer import *
+
 
 class Instruction():
     """
@@ -17,11 +22,13 @@ class Instruction():
         self.location = Instruction.counter * WORD_SIZE        
         Instruction.counter += 1
 
+
     def __str__(self):
         """
         Convert to string representation.
         """
         return self.name  + ' ' + ', '.join(self.operands)
+
         
     def getType(self):
         """
@@ -38,6 +45,7 @@ class Instruction():
         else:
             raise Exception('Unknown instruction encountered')
 
+
     def split_operands(self):
         """
         Split operands into registers and immediates.
@@ -50,6 +58,7 @@ class Instruction():
         else:
             operands = self.operands
         return operands
+
 
     def extract_registers(self):
         """
@@ -87,8 +96,25 @@ class Instruction():
         else:
             self.srcRegs = operands[1:]
 
+            
     def update_imm(self, address):
         """
         Update the immediate value.
         """
         self.imm = address
+
+
+    def determine_exec_functional_unit(self):
+        """
+        Determine the functional unit to be used in execution stage.
+        """
+        if (self.name in BRANCH_INSTRUCTIONS + MISC_INSTRUCTIONS):
+            return None
+        elif (self.name in ['add.d', 'sub.d']):
+            return 'FP_ADD'
+        elif (self.name in ['mul.d']):
+            return 'FP_MUL'
+        elif (self.name in ['div.d']):
+            return 'FP_DIV'
+        else:
+            return 'IU'
