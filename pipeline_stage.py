@@ -4,6 +4,7 @@ Execution details for all the pipeline stages.
 
 from computer import *
 from instruction_cache import *
+from data_cache import *
 
 
 class Pipeline_Stage():
@@ -32,8 +33,7 @@ class Fetch_Stage(Pipeline_Stage):
         """
         Pipeline_Stage.__init__(self, instruction)
         self.name = 'IF'
-        instruction_cache = Instruction_Cache()
-        self.isHit, self.clock_cycles = instruction_cache.read(self.instruction.location)
+        self.isHit, self.clock_cycles = Instruction_Cache.read(self.instruction.location)
 
 
     def execute(self, instruction):
@@ -159,21 +159,21 @@ class Decode_Stage(Pipeline_Stage):
         """
         Update the program counter from the branch instruction.
         """
-        if (self.instruction.name == 'J'):
+        if (self.instruction.name == 'j'):
             REGISTERS['PC'] = self.instruction.imm / WORD_SIZE
             REGISTERS['FLUSH'] = True
             return
 
-        if ((self.instruction.name == 'BEQ') and
+        if ((self.instruction.name == 'beq') and
             (REGISTERS[self.instruction.srcRegs[0]] == REGISTERS[self.instruction.srcRegs[1]])):
             REGISTER['PC'] = self.instruction.imm / WORD_SIZE
             REGISTER['FLUSH'] = True
             return    
 
-        if ((self.instruction.name == 'BNE') and
+        if ((self.instruction.name == 'bne') and
             (REGISTERS[self.instruction.srcRegs[0]] != REGISTERS[self.instruction.srcRegs[1]])):
-                REGISTER['PC'] = self.instruction.imm / WORD_SIZE
-                REGISTER['FLUSH'] = True
+            REGISTERS['PC'] = self.instruction.imm / WORD_SIZE
+            REGISTERS['FLUSH'] = True
 
 
     def select_execution_stage(self, exec_functional_unit):
@@ -241,28 +241,28 @@ class Execute_Stage(Pipeline_Stage):
         """
         Perform the integer operation.
         """
-        if (self.instruction.name == 'DADD'):
+        if (self.instruction.name == 'dadd'):
             REGISTERS[self.instruction.destReg] = REGISTERS[self.instruction.srcRegs[0]] + REGISTERS[self.instruction.srcRegs[1]]
 
-        elif (self.instruction.name == 'DADDI'):
+        elif (self.instruction.name == 'daddi'):
             REGISTERS[self.instruction.destReg] = REGISTERS[self.instruction.srcRegs[0]] + int(self.instruction.imm)
 
-        elif (self.instruction.name == 'DSUB'):
+        elif (self.instruction.name == 'dsub'):
             REGISTERS[self.instruction.destReg] = REGISTERS[self.instruction.srcRegs[0]] - REGISTERS[self.instruction.srcRegs[1]]
 
-        elif (self.instruction.name == 'DSUBI'):
+        elif (self.instruction.name == 'dsubi'):
             REGISTERS[self.instruction.destReg] = REGISTERS[self.instruction.srcRegs[0]] - int(self.instruction.imm)
 
-        elif (self.instruction.name == 'AND'):
+        elif (self.instruction.name == 'and'):
             REGISTERS[self.instruction.destReg] = REGISTERS[self.instruction.srcRegs[0]] & REGISTERS[self.instruction.srcRegs[1]]
 
-        elif (self.instruction.name == 'ANDI'):
+        elif (self.instruction.name == 'andi'):
             REGISTERS[self.instruction.destReg] = REGISTERS[self.instruction.srcRegs[0]] & int(self.instruction.imm)
 
-        elif (self.instruction.name == 'OR'):
+        elif (self.instruction.name == 'or'):
             REGISTERS[self.instruction.destReg] = REGISTERS[self.instruction.srcRegs[0]] | REGISTERS[self.instruction.srcRegs[1]]
 
-        elif (self.instruction.name == 'ORI'):
+        elif (self.instruction.name == 'ori'):
             REGISTERS[self.instruction.destReg] = REGISTERS[self.instruction.srcRegs[0]] | int(self.instruction.imm)
 
 
@@ -342,28 +342,28 @@ class Memory_Stage(Execute_Stage):
         """
         Calculate the address and the memory cycles required
         """
-        if (self.instruction.name == 'LW'):
+        if (self.instruction.name == 'lw'):
             location = int(self.instruction.offset) + REGISTERS[self.instruction.srcRegs[0]]
             self.word_hit[0], REGISTERS[self.instruction.destReg], cycles = Data_Cache.read(location)
             return [cycles, 0]
 
-        elif (self.instruction.name == 'L.D'):
+        elif (self.instruction.name == 'l.d'):
             time_to_read = [0, 0]
             location = int(self.instruction.offset) + REGISTERS[self.instruction.srcRegs[0]]
-            self.word_hit[0], word, time_to_read[0] = Data_Cache.read(address)
-            self.word_hit[1], word, time_to_read[1] = Data_Cache.read(address + 4)
+            self.word_hit[0], word, time_to_read[0] = Data_Cache.read(location)
+            self.word_hit[1], word, time_to_read[1] = Data_Cache.read(location + WORD_SIZE)
             return time_to_read
 
-        elif (self.instruction.name == 'SW'):
+        elif (self.instruction.name == 'sw'):
             location = int(self.instruction.offset) + REGISTERS[self.instruction.srcRegs[1]]
             self.word_hit[0], cycles = Data_Cache.write(location, REGISTERS[self.instruction.srcRegs[0]])
             return [cycles, 0]
 
-        elif (self.instruction.name == 'S.D'):
+        elif (self.instruction.name == 's.d'):
             time_to_write = [0, 0]
             location = int(self.instruction.offset) + REGISTERS[self.instruction.srcRegs[1]]
-            self.word_hit[0], time_to_write[0] = DCache.write(address, 0, False)
-            self.word_hit[1], time_to_write[1] = DCache.write(address + 4, 0, False)
+            self.word_hit[0], time_to_write[0] = Data_Cache.write(location, 0, False)
+            self.word_hit[1], time_to_write[1] = Data_Cache.write(location + WORD_SIZE, 0, False)
             return time_to_write
 
         return [1, 0]
@@ -427,7 +427,7 @@ class FP_Multiplier_Stage(Execute_Stage):
         """
         Execute FP Multiplier stage.
         """
-        if self.clock_cycles == FP_CONFIG['FP_MUL']['CYCLES']:
+        if (self.clock_cycles == FP_CONFIG['FP_MUL']['CYCLES']):
             self.occupy_dest_register()
             STAGE_FLAG['FP_MUL'] = OCCUPIED
 
