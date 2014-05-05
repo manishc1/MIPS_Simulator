@@ -46,7 +46,7 @@ HAZARDS = ['RAW', 'WAR', 'WAW', 'Struct']
 
 
 # Stages
-STAGES = ['ID', 'IF', 'EX', 'WB']
+STAGES = ['IF', 'ID', 'EX', 'WB']
 
 
 
