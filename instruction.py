@@ -109,7 +109,7 @@ class Instruction():
         Determine the functional unit to be used in execution stage.
         """
         if (self.name in BRANCH_INSTRUCTIONS + MISC_INSTRUCTIONS):
-            return None
+            return 'NO_UNIT'
         elif (self.name in ['add.d', 'sub.d']):
             return 'FP_ADD'
         elif (self.name in ['mul.d']):
