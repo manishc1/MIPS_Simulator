@@ -3,7 +3,7 @@ Wrapper that wraps the instruction for passing between the stages in the pipelin
 """
 
 from computer import *
-from result import *
+from output import *
 
 import pipeline_stage
 
@@ -38,7 +38,7 @@ class Instruction_Container():
         if (self.current_pipeline_stage == None):
             return False
 
-        self.increment_cycles(prev_pipeline_stage):
+        self.increment_cycles(prev_pipeline_stage)
         self.current_pipeline_stage.execute(self.instruction)
 
         return True
