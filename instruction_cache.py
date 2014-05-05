@@ -2,7 +2,7 @@
 Details of the instruction cache.
 """
 
-from cache_block import *
+from memory_cache_block import *
 from computer import *
 
 
@@ -20,7 +20,7 @@ class InstructionCache():
         Initialize the instruction cache.
         """
         for id in range(NUMBER_OF_CACHE_BLOCKS):
-            InstructionCache.cache_block.append(CacheBlock(id, CACHE_BLOCK_SIZE))
+            InstructionCache.cache_block.append(Cache_Block(id, CACHE_BLOCK_SIZE))
 
 
     def read(self, location):
