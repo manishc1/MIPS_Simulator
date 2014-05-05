@@ -1,5 +1,5 @@
 """
-Stores the configuration details
+Stores the configuration details.
 """
 
 ACCESS_TIME = {}
