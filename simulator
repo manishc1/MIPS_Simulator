@@ -1,9 +1,141 @@
 #! /usr/bin/python
 
+"""
+Entry point for the simulation.
+"""
+
+from collections import deque
 from computer import *
+from data_cache import *
+from instruction_container import *
+from instruction_cache import *
 from scanner import *
 
+import operator
 import sys
+
+
+
+def write_back_organize(new_instruction_containers, exe_instruction_containers):
+    priority = {}
+    count = MAX
+
+    for i in range(len(exe_instruction_containers)):
+        exe = exe_instruction_containers.pop()
+
+        if exe.instruction.determine_exec_functional_unit() == 'FP_DIV':
+            if FP_CONFIG['FP_DIV']['PIPELINED']:
+                priority[exe] = count + FP_CONFIG['FP_DIV']['CYCLES']
+            else:
+                priority[exe] = count + FP_CONFIG['FP_DIV']['CYCLES'] + MAX
+
+        elif exe.instruction.determine_exec_functional_unit() == 'FP_MUL':
+            if FP_CONFIG['FP_MUL']['PIPELINED']:
+                priority[exe] = count + FP_CONFIG['FP_MUL']['CYCLES']
+            else:
+                priority[exe] = count + FP_CONFIG['FP_MUL']['CYCLES'] + MAX
+
+        elif exe.instruction.determine_exec_functional_unit() == 'FP_ADD':
+            if FP_CONFIG['FP_ADD']['PIPELINED']:
+                priority[exe] = count + FP_CONFIG['FP_ADD']['CYCLES']
+            else:
+                priority[exe] = count + FP_CONFIG['FP_ADD']['CYCLES'] + MAX
+
+        else:
+            priority[ex] = count
+
+        count -= 1
+
+    sorted_x = sorted(priority.iteritems(), key=operator.itemgetter(1), reverse=True)
+    for element in sorted_x:
+        new_instruction_containers.appendleft(element[0])
+
+    return new_instruction_containers
+
+
+def organize(old_instruction_containers):
+    """
+    Organize instructions in WB - EX - ID - IF manner.
+    """
+    new_instruction_containers = deque([])
+
+    for i in range(len(old_instruction_containers)):
+        ic = old_instruction_containers.pop()
+        if ic.current_pipeline_stage.name == 'WB':
+            new_instruction_containers.appendleft(ic)
+        else:
+            old_instruction_containers.appendleft(ic)
+
+    exe_instruction_containers = deque([])
+    for i in range(len(old_instruction_containers)):
+        ic = old_instruction_containers.pop()
+        if ic.current_pipeline_stage.name == 'EX':
+            exe_instruction_containers.appendleft(ic)
+        else:
+            old_instruction_containers.appendleft(ic)
+
+    new_instruction_containers = write_back_organize(new_instruction_containers, exe_instruction_containers)
+
+    for i in range(len(old_instruction_containers)):
+        ic = old_instruction_containers.pop()
+        if ic.current_pipeline_stage.name == 'ID':
+            new_instruction_containers.appendleft(ic)
+        else:
+            old_instruction_containers.appendleft(ic)
+
+    for i in range(len(old_instruction_containers)):
+        ic = old_instruction_containers.pop()
+        if ic.current_pipeline_stage.name == 'IF':
+            new_instruction_containers.appendleft(ic)
+        else:
+            old_instruction_containers.appendleft(ic)
+
+    return new_instruction_containers
+
+
+def init_cache():
+    """
+    Initialize instruction and data cache.
+    """
+    InstructionCache()
+    Data_Cache()
+
+
+def simulate():
+    """
+    Simulate the execution of the instructions.
+    """
+    init_cache()
+
+    clock_cycle = 1
+    REGISTERS['PC'] = 1
+    
+    output = []
+    active_instruction_containers = deque([Instruction_Container(INSTRUCTIONS[0], clock_cycle)])
+
+    while (len(active_instruction_containers) > 0):
+        active_instruction_containers = organize(active_instruction_containers)
+        future_instruction_containers = deque([])
+
+        while (len(active_instruction_containers) > 0):
+            ic = active_instruction_containers.pop()
+            if (ic.keep_executing()):
+                future_instruction_containers.appendleft(ic)
+            else:
+                output.append(ic.output)
+
+        active_instruction_containers = future_instruction_containers
+
+        clock_cycle += 1
+
+        if ((REGISTERS['PC'] < len(INSTRUCTIONS)) and
+            (STAGE_FLAG['IF'] == AVAILABLE)):
+            active_instruction_containers.appendleft(INSTRUCTIONS(REGISTERS['PC'], clock_cycle))
+            REGISTERS['PC'] += 1
+
+        print active_instruction_containers
+        #print_output(output)
+
 
 def main(instFile, dataFile, regFile, configFile, resultFile):
     """
@@ -18,6 +150,9 @@ def main(instFile, dataFile, regFile, configFile, resultFile):
     except Exception as e:
         print 'Scanning Error: ' + str(e)
         exit()
+
+    simulate()
+
         
 if __name__ == "__main__":
     """
