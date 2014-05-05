@@ -1,8 +1,9 @@
 """
-Defines the world of the computer hat is simulating.
+Defines the world of the MIPS computer that is being simulating.
 """
 
 from config import *
+
 
 # ALU Instructions
 INTEGER_ALU_INSTRUCTIONS = ['dadd', 'dsub', 'and', 'or']
@@ -29,13 +30,14 @@ DESTFUL_INSTRUCTIONS = LOAD_INSTRUCTIONS + ALU_INSTRUCTIONS
 
 
 # Some computer constants
+DATA_MEMORY_BASE_ADDRESS = 256
 WORD_SIZE = 4
-DATA_MEMORY_BASE_ADDRESS = 100
 
 
 
 # Cache constants
 CACHE_BLOCK_SIZE = 4
+NUMBER_OF_CACHE_BLOCKS = 4
 
 
 
@@ -51,3 +53,6 @@ REGISTER_FLAG = {}
 # Some macro definitions
 AVAILABLE = False
 BUSY = True
+
+HIT = True
+MISS = False
