@@ -14,6 +14,7 @@ def main(instFile, dataFile, regFile, configFile, resultFile):
         scanner.scan_instructions(instFile)
         scanner.scan_data(dataFile)
         scanner.scan_registers(regFile)
+        scanner.scan_configuration(configFile)
     except Exception as e:
         print 'Scanning Error: ' + str(e)
         exit()

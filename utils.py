@@ -1,3 +1,7 @@
+"""
+Basic functional utilities.
+"""
+
 def readLines(fileName):
     try:
         f = open(fileName, 'r')

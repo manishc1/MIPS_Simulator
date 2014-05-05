@@ -1,3 +1,8 @@
+"""
+Defines the world of the computer hat is simulating.
+"""
+
+from config import *
 
 # ALU Instructions
 INTEGER_ALU_INSTRUCTIONS = ['dadd', 'dsub', 'and', 'or']
