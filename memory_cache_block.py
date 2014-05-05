@@ -2,7 +2,7 @@
 Cache Block and its state.
 """
 
-class CacheBlock():
+class Cache_Block():
     """
     Class for the cache block.
     """
@@ -13,10 +13,13 @@ class CacheBlock():
         """
         self.id = id
         self.size = size
-        self.words = [0] * CACHE_BLOCK_SIZE
+        self.words = [0] * size
         self.valid_bit = False
         self.dirty_bit = False
 
 
-    def copy(self, words):
+    def write(self, words):
+        """
+        Write the words in the cache block.
+        """
         self.words = words
