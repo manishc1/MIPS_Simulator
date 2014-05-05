@@ -1,0 +1,22 @@
+#! /usr/bin/python
+
+from computer import *
+from scanner import *
+
+import sys
+
+def main(instFile, dataFile, regFile, configFile, resultFile):
+    try:
+        scanner = Scanner()
+        scanner.scan_instructions(instFile)
+    except Exception as e:
+        print 'Scanning Error: ' + str(e)
+        exit()
+        
+if __name__ == "__main__":
+    nArgs = len(sys.argv)
+    args = sys.argv
+    if (nArgs != 6):
+        print "Usage: simulator inst.txt data.txt reg.txt config.txt result.txt"
+        exit()
+    main(args[1], args[2], args[3], args[4], args[5])
