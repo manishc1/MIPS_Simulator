@@ -11,6 +11,7 @@ class Scanner():
     Class for scanning the files
     """
 
+    @classmethod
     def scan_instructions(self, fileName):
         """
         Method to scan the instructions from file.
@@ -40,6 +41,7 @@ class Scanner():
                 raise Exception('Label expected!')
             
 
+    @classmethod
     def scan_data(self, fileName):
         """
         Method to scan the data from the file.
@@ -55,6 +57,7 @@ class Scanner():
             data_count += 1
 
 
+    @classmethod
     def scan_registers(self, fileName):
         """
         Method to scan the registers from the file.
@@ -72,6 +75,7 @@ class Scanner():
             register_count += 1
 
 
+    @classmethod
     def fill_FP_configuration(self, FP_UNIT, configs):
         """
         Populate the FU_CONFIG.
@@ -85,6 +89,7 @@ class Scanner():
         FP_CONFIG[FP_UNIT] = {'CYCLES': int(configs[0]), 'PIPELINED': isPipelined}
 
 
+    @classmethod
     def scan_configuration(self, fileName):
         """
         Method to scan the configuration from the file.
