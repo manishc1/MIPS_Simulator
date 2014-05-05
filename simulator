@@ -6,14 +6,21 @@ from scanner import *
 import sys
 
 def main(instFile, dataFile, regFile, configFile, resultFile):
+    """
+    Scan the files and issue simulation.
+    """
     try:
         scanner = Scanner()
         scanner.scan_instructions(instFile)
+        scanner.scan_data(dataFile)
     except Exception as e:
         print 'Scanning Error: ' + str(e)
         exit()
         
 if __name__ == "__main__":
+    """
+    Entry point to the simulator.
+    """
     nArgs = len(sys.argv)
     args = sys.argv
     if (nArgs != 6):

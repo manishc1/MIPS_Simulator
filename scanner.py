@@ -34,3 +34,15 @@ class Scanner():
                 instr.update_imm(LABEL[instr.imm])
             elif (instr.getType() == 'BRANCH'):
                 raise Exception('Label expected!')
+
+
+    def scan_data(self, fileName):
+        """
+        Methos to scan the data from the file.
+        """
+        lines = readLines(fileName)
+        
+        count = 0
+        for line in lines:
+            DATA[DATA_MEMORY_BASE_ADDRESS + count*WORD_SIZE] = int(line, 2)
+            count += 1

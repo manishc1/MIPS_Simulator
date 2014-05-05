@@ -18,9 +18,15 @@ BRANCH_INSTRUCTIONS = CONDITIONAL_BRANCH_INSTRUCTIONS + UNCONDITIONAL_BRANCH_INS
 # Miscelleneous Instructions
 MISC_INSTRUCTIONS = ['hlt']
 
+# Insrtuctions with destination.
 DESTFUL_INSTRUCTIONS = LOAD_INSTRUCTIONS + ALU_INSTRUCTIONS
 
+# Some computer constants
+WORD_SIZE = 4
+DATA_MEMORY_BASE_ADDRESS = 100
+
+# State of the computer and program
+DATA = {}
 INSTRUCTIONS = []
 LABEL = {}
-WORD_SIZE = 4
 
