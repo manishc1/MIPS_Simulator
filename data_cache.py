@@ -105,7 +105,7 @@ class Data_Cache:
         Write Back from cache to memory.
         """
         tag = Data_Cache.cache_sets[set_id].cache_block[block_id].tag
-        base_address = DATA_MEMORY_BASE_ADDRESS + ((tag << 5) | (block_id << ))
+        base_address = DATA_MEMORY_BASE_ADDRESS + ((tag << 5) | (block_id << NUMBER_OF_CACHE_BLOCKS))
         for id in range(CACHE_BLOCK_SIZE):
             DATA[base_address + (id * WORD_SIZE)] = Data_Cache.cache_sets[set_id].cache_block[block_id].words[i]
         return 2 * (ACCESS_TIME['MEMORY'] + ACCESS_TIME['DCACHE'])
