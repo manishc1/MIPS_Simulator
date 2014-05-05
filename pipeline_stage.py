@@ -30,7 +30,8 @@ class Fetch_Stage(Pipeline_Stage):
         """
         Pipeline_Stage.__init__(self, instruction)
         self.name = 'IF'
-        self.isHit, self.clock_cycles = InstructionCache.read(self.instruction.location)
+        icache = InstructionCache()
+        self.isHit, self.clock_cycles = icache.read(self.instruction.location)
 
 
     def execute(self, instruction):
@@ -475,7 +476,7 @@ class FP_Divider_Stage(Execute_Stage):
         if (self.clock_cycles < 0):
             self.hazards['Struct'] = True
 
-        if FP_CONFIG['FP_DIV']['PIPELINED']):
+        if (FP_CONFIG['FP_DIV']['PIPELINED']):
             STAGE_FLAG['FP_DIV'] = AVAILABLE
 
         if ((self.clock_cycles <= 0) and (STAGE_FLAG['WB'] == AVAILABLE)):
