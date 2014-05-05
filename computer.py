@@ -29,4 +29,9 @@ DATA_MEMORY_BASE_ADDRESS = 100
 DATA = {}
 INSTRUCTIONS = []
 LABEL = {}
+REGISTERS = {'PC': 0, 'FLUSH': False}
+REGISTER_FLAG = {}
 
+# Some macro definitions
+AVAILABLE = False
+BUSY = True

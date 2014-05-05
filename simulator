@@ -13,6 +13,7 @@ def main(instFile, dataFile, regFile, configFile, resultFile):
         scanner = Scanner()
         scanner.scan_instructions(instFile)
         scanner.scan_data(dataFile)
+        scanner.scan_registers(regFile)
     except Exception as e:
         print 'Scanning Error: ' + str(e)
         exit()
