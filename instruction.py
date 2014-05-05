@@ -54,7 +54,7 @@ class Instruction():
         if (len(self.operands) > 1) and ('(' in self.operands[1]):
             operands.append(self.operands[0])
             operands.append(self.operands[1].split('(')[0])
-            operands.append(self.operands[1].split('(')[0].split(')')[0])
+            operands.append(self.operands[1].split('(')[1].split(')')[0])
         else:
             operands = self.operands
         return operands
@@ -81,7 +81,7 @@ class Instruction():
 
         if (self.name in LOAD_INSTRUCTIONS):
             self.offset = operands[1]
-            self.src_reg = [operands[2]]
+            self.srcRegs = [operands[2]]
         elif (self.name in STORE_INSTRUCTIONS):
             self.offset = operands[1]
             self.srcRegs = [operands[0], operands[2]]
