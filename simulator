@@ -23,26 +23,19 @@ def write_back_organize(new_instruction_containers, exe_instruction_containers):
     for i in range(len(exe_instruction_containers)):
         exe = exe_instruction_containers.pop()
 
-        if exe.instruction.determine_exec_functional_unit() == 'FP_DIV':
-            if FP_CONFIG['FP_DIV']['PIPELINED']:
-                priority[exe] = count + FP_CONFIG['FP_DIV']['CYCLES']
-            else:
-                priority[exe] = count + FP_CONFIG['FP_DIV']['CYCLES'] + MAX
+        functional_unit = exe.instruction.determine_exec_functional_unit()
 
-        elif exe.instruction.determine_exec_functional_unit() == 'FP_MUL':
-            if FP_CONFIG['FP_MUL']['PIPELINED']:
-                priority[exe] = count + FP_CONFIG['FP_MUL']['CYCLES']
-            else:
-                priority[exe] = count + FP_CONFIG['FP_MUL']['CYCLES'] + MAX
-
-        elif exe.instruction.determine_exec_functional_unit() == 'FP_ADD':
-            if FP_CONFIG['FP_ADD']['PIPELINED']:
-                priority[exe] = count + FP_CONFIG['FP_ADD']['CYCLES']
-            else:
-                priority[exe] = count + FP_CONFIG['FP_ADD']['CYCLES'] + MAX
-
-        else:
-            priority[ex] = count
+        is_fp_flag = False
+        for fu in FP_UNITS:
+            if (functional_unit == fu):
+                if (FP_CONFIG[fu]['PIPELINED']):
+                    priority[exe] = count + FP_CONFIG[fu]['CYCLES']
+                else:
+                    priority[exe] = count + FP_CONFIG[fu]['CYCLES'] + MAX
+                is_fp_flag = True
+                break
+        if (not is_fp_flag):
+            priority[exe] = count
 
         count -= 1
 
@@ -97,7 +90,7 @@ def init_cache():
     """
     Initialize instruction and data cache.
     """
-    InstructionCache()
+    Instruction_Cache()
     Data_Cache()
 
 
@@ -122,6 +115,7 @@ def simulate():
             if (ic.keep_executing()):
                 future_instruction_containers.appendleft(ic)
             else:
+                print ic.output
                 output.append(ic.output)
 
         active_instruction_containers = future_instruction_containers
@@ -130,10 +124,16 @@ def simulate():
 
         if ((REGISTERS['PC'] < len(INSTRUCTIONS)) and
             (STAGE_FLAG['IF'] == AVAILABLE)):
-            active_instruction_containers.appendleft(INSTRUCTIONS(REGISTERS['PC'], clock_cycle))
+            active_instruction_containers.appendleft(Instruction_Container(INSTRUCTIONS[REGISTERS['PC']], clock_cycle))
             REGISTERS['PC'] += 1
 
-        print active_instruction_containers
+        """
+        temp = deque([])
+        while(len(active_instruction_containers)>0):
+            ic = active_instruction_containers.pop()
+            print ic.output
+            temp.appendleft(ic)
+        active_instruction_containers = temp"""
         #print_output(output)
 
 

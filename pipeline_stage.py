@@ -16,7 +16,9 @@ class Pipeline_Stage():
         Initialize the pipeline stage.
         """
         self.instruction = instruction
-        self.hazards = {'RAW': False, 'WAR': False, 'WAW': False, 'Struct': False}
+        self.hazards = {}
+        for hazard in HAZARDS:
+            self.hazards[hazard] = False
 
 
 class Fetch_Stage(Pipeline_Stage):
@@ -30,8 +32,8 @@ class Fetch_Stage(Pipeline_Stage):
         """
         Pipeline_Stage.__init__(self, instruction)
         self.name = 'IF'
-        icache = InstructionCache()
-        self.isHit, self.clock_cycles = icache.read(self.instruction.location)
+        instruction_cache = Instruction_Cache()
+        self.isHit, self.clock_cycles = instruction_cache.read(self.instruction.location)
 
 
     def execute(self, instruction):
@@ -40,15 +42,19 @@ class Fetch_Stage(Pipeline_Stage):
         """
         STAGE_FLAG[self.name] = OCCUPIED
 
-        if ((self.clock_cycles > 0) and (not self.isHit) and (STAGE_FLAG['DBUS'] == AVAILABLE)):
+        if ((self.clock_cycles > 0) and
+            (not self.isHit) and
+            (STAGE_FLAG['DBUS'] == AVAILABLE)):
             STAGE_FLAG['IBUS'] = OCCUPIED
 
-        if ((Memory_Stage.bus_access_flag) and (not self.isHit)):
+        if ((Memory_Stage.bus_access_flag) and
+            (not self.isHit)):
             STAGE_FLAG['IBUS'] = OCCUPIED
             STAGE_FLAG['DBUS'] = AVAILABLE
-            Memory_Stage.bus_access_flag = True
+            Memory_Stage.bus_access_flag = False
 
-        if ((STAGE_FLAG['IBUS'] == OCCUPIED) and (self.isHit)):
+        if ((STAGE_FLAG['IBUS'] == OCCUPIED) or
+            (self.isHit)):
             self.clock_cycles -= 1
 
 
@@ -58,7 +64,7 @@ class Fetch_Stage(Pipeline_Stage):
         """
         if (self.clock_cycles == 0):
             STAGE_FLAG['IBUS'] = AVAILABLE
-
+            
         if (self.clock_cycles <= 0):
             if (REGISTERS['FLUSH']):
                 STAGE_FLAG[self.name] = AVAILABLE
@@ -85,7 +91,7 @@ class Decode_Stage(Pipeline_Stage):
         self.name = 'ID'
 
 
-    def execute(self):
+    def execute(self, instruction):
         """
         Execute the instruction decode stage.
         """
@@ -111,11 +117,11 @@ class Decode_Stage(Pipeline_Stage):
         return self
 
 
-    def discover_hazard(self, exec_functional_unit):
+    def discover_hazards(self, exec_functional_unit):
         """
         Discover the hazards in the instruction decode stage.
         """
-        if (not self.check_hazard(func_unit)):
+        if (not self.check_hazard(exec_functional_unit)):
             return
 
         self.hazards['Struct'] = False
@@ -124,8 +130,8 @@ class Decode_Stage(Pipeline_Stage):
 
         self.hazards['RAW'] = False
         for register in self.instruction.srcRegs:
-            if (REGISTER_FLAG[reg] == OCCUPIED):
-                self.hazard['RAW'] = True
+            if (REGISTER_FLAG[register] == OCCUPIED):
+                self.hazards['RAW'] = True
 
         self.hazards['WAW'] = False
         if ((self.instruction.destReg != '') and (REGISTER_FLAG[self.instruction.destReg] == OCCUPIED)):
@@ -137,7 +143,7 @@ class Decode_Stage(Pipeline_Stage):
         Check is there is a hazardous situation.
         """
         for register in self.instruction.srcRegs:
-            if (REGISTER_FLAG[reg] == OCCUPIED):
+            if (REGISTER_FLAG[register] == OCCUPIED):
                 return True
 
         if ((self.instruction.destReg != '') and (REGISTER_FLAG[self.instruction.destReg] == OCCUPIED)):
@@ -205,7 +211,7 @@ class Execute_Stage(Pipeline_Stage):
         Execute the interger unit stage.
         """
         if (STAGE_FLAG['IU'] == AVAILABLE):
-            self.occupy_dest_registers()
+            self.occupy_dest_register()
             self.operate()
 
         STAGE_FLAG['IU'] = OCCUPIED
@@ -360,7 +366,7 @@ class Memory_Stage(Execute_Stage):
             self.word_hit[1], time_to_write[1] = DCache.write(address + 4, 0, False)
             return time_to_write
 
-        return 1, 0
+        return [1, 0]
 
 
 class FP_Adder_Stage(Execute_Stage):
@@ -372,7 +378,7 @@ class FP_Adder_Stage(Execute_Stage):
         """
         Initialize FP Adder stage.
         """
-        ExecuteStage.__init__(self, instruction)
+        Execute_Stage.__init__(self, instruction)
         self.clock_cycles = FP_CONFIG['FP_ADD']['CYCLES']
 
 
@@ -413,8 +419,8 @@ class FP_Multiplier_Stage(Execute_Stage):
         """
         Initialize FP Multiplier stage.
         """
-        ExecuteStage.__init__(self, instruction)
-        self.clocks_cycles = FP_CONFIG['FP_MUL']['CYCLES']
+        Execute_Stage.__init__(self, instruction)
+        self.clock_cycles = FP_CONFIG['FP_MUL']['CYCLES']
 
 
     def execute(self, instruction):
@@ -423,7 +429,7 @@ class FP_Multiplier_Stage(Execute_Stage):
         """
         if self.clock_cycles == FP_CONFIG['FP_MUL']['CYCLES']:
             self.occupy_dest_register()
-            STAGE['FP_MUL'] = OCCUPIED
+            STAGE_FLAG['FP_MUL'] = OCCUPIED
 
         self.clock_cycles -= 1
 
@@ -486,7 +492,7 @@ class FP_Divider_Stage(Execute_Stage):
         return self
 
 
-class WriteBackStage(Pipeline_Stage):
+class WriteBack_Stage(Pipeline_Stage):
     """
     Class for WriteBack stage.
     """

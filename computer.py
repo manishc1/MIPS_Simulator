@@ -50,6 +50,11 @@ STAGES = ['ID', 'IF', 'EX', 'WB']
 
 
 
+# Floating Point functional units
+FP_UNITS = ['FP_ADD', 'FP_MUL', 'FP_DIV']
+
+
+
 # Some computer constants
 DATA_MEMORY_BASE_ADDRESS = 256
 WORD_SIZE = 4

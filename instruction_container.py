@@ -23,6 +23,13 @@ class Instruction_Container():
         self.output = Output(instruction, clock_cycle)
 
 
+    def __str__(self):
+        """
+        Represent the instruction container as string.
+        """
+        return "\nInstruction:%s\nOutput:%s" % (self.instruction, self.output)
+
+
     def keep_executing(self):
         """
         Continue the execution in the same stage or enter the next stage.        
@@ -49,7 +56,9 @@ class Instruction_Container():
         Increment the pipeline stage cycles of the instruction.
         """
         for i in range(len(STAGES)-1):
-            if ((prev_pipeline_stage.name == STAGES[i]) and self.current_pipeline_stage.name == STAGES[i]):
+            if ((prev_pipeline_stage.name == STAGES[i]) and
+                (self.current_pipeline_stage.name == STAGES[i])):
                 self.output.cycles[STAGES[i]] += 1
-            elif ((prev_pipeline_stage.name == STAGES[i]) and (self.current_pipeline_stage.name == STAGES[i+1])):
+            elif ((prev_pipeline_stage.name == STAGES[i]) and
+                  (self.current_pipeline_stage.name == STAGES[i+1])):
                 self.output.cycles[STAGES[i+1]] = self.output.cycles[STAGES[i]] + 1
