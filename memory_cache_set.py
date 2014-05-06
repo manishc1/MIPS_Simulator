@@ -20,17 +20,3 @@ class Cache_Set:
         self.cache_block = []
         for i in range(self.size):
             self.cache_block.append(Cache_Block(i, CACHE_BLOCK_SIZE))
-
-
-    def check_block_for_validity(self, block_id):
-        """
-        Check if the valid bit is set.
-        """
-        return self.cache_block[block_id].valid_bit
-
-
-    def get_block_tag(self, block_id):
-        """
-        Return the tag of the block.
-        """
-        return self.cache_block[block_id].tag
