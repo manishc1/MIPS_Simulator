@@ -6,7 +6,7 @@ from computer import *
 from memory_cache_block import *
 
 
-class Instruction_Cache:
+class Instruction_Cache():
     """
     Class for the instruction cache.
     """

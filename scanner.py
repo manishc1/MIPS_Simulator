@@ -37,7 +37,7 @@ class Scanner():
         for instr in INSTRUCTIONS:
             if (instr.imm in LABEL.keys()):
                 instr.update_imm(LABEL[instr.imm])
-            elif (instr.getType() == 'BRANCH'):
+            elif (instr.get_instruction_type() == 'BRANCH'):
                 raise Exception('Label expected!')
             
 

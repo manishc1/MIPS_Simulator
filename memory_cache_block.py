@@ -16,10 +16,3 @@ class Cache_Block():
         self.words = [0] * size
         self.valid_bit = False
         self.dirty_bit = False
-
-
-    def write(self, words):
-        """
-        Write the words in the cache block.
-        """
-        self.words = words

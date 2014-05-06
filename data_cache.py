@@ -7,7 +7,7 @@ from memory_cache_block import *
 from memory_cache_set import *
 
 
-class Data_Cache:
+class Data_Cache():
     """
     Class for data cache.
     """
@@ -87,7 +87,8 @@ class Data_Cache:
         tag = location >> 5
         block_id = (location >> NUMBER_OF_CACHE_BLOCKS) % NUMBER_OF_CACHE_SETS
 
-        if ((Data_Cache.cache_sets[id].check_block_for_validity(block_id)) and (Data_Cache.cache_sets[id].get_block_tag(block_id) == tag)):
+        if ((Data_Cache.cache_sets[id].check_block_for_validity(block_id)) and
+            (Data_Cache.cache_sets[id].get_block_tag(block_id) == tag)):
             return True
 
         return False

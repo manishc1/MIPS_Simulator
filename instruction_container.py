@@ -39,15 +39,13 @@ class Instruction_Container():
 
         if (self.current_pipeline_stage != prev_pipeline_stage):
             for hazard in HAZARDS:
-                if (prev_pipeline_stage.hazards[hazard] == True):
-                    self.output.hazards[hazard] = True
+                self.output.hazards[hazard] |= prev_pipeline_stage.hazards[hazard]
 
         if (self.current_pipeline_stage == None):
             return False
 
         self.increment_cycles(prev_pipeline_stage)
         self.current_pipeline_stage.execute(self.instruction)
-
         return True
 
 

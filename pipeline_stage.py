@@ -42,16 +42,15 @@ class Fetch_Stage(Pipeline_Stage):
         """
         STAGE_FLAG[self.name] = OCCUPIED
 
-        if ((self.clock_cycles > 0) and
-            (not self.isHit) and
-            (STAGE_FLAG['DBUS'] == AVAILABLE)):
-            STAGE_FLAG['IBUS'] = OCCUPIED
+        if (not self.isHit):
+            if ((self.clock_cycles > 0) and
+                (STAGE_FLAG['DBUS'] == AVAILABLE)):
+                STAGE_FLAG['IBUS'] = OCCUPIED
 
-        if ((Memory_Stage.bus_access_flag) and
-            (not self.isHit)):
-            STAGE_FLAG['IBUS'] = OCCUPIED
-            STAGE_FLAG['DBUS'] = AVAILABLE
-            Memory_Stage.bus_access_flag = False
+            if (Memory_Stage.bus_access_flag):
+                STAGE_FLAG['IBUS'] = OCCUPIED
+                STAGE_FLAG['DBUS'] = AVAILABLE
+                Memory_Stage.bus_access_flag = False
 
         if ((STAGE_FLAG['IBUS'] == OCCUPIED) or
             (self.isHit)):
@@ -105,7 +104,8 @@ class Decode_Stage(Pipeline_Stage):
         exec_functional_unit = self.instruction.determine_exec_functional_unit()
         self.discover_hazards(exec_functional_unit)
 
-        if ((exec_functional_unit == 'NO_UNIT') and (not self.check_hazard(exec_functional_unit))):
+        if ((exec_functional_unit == 'NO_UNIT') and
+            (not self.check_hazard(exec_functional_unit))):
             self.perform_branch_instruction()
             STAGE_FLAG[self.name] = AVAILABLE
             return None
@@ -125,7 +125,8 @@ class Decode_Stage(Pipeline_Stage):
             return
 
         self.hazards['Struct'] = False
-        if ((exec_functional_unit != 'NO_UNIT') and (STAGE_FLAG[exec_functional_unit] == OCCUPIED)):
+        if ((exec_functional_unit != 'NO_UNIT') and
+            (STAGE_FLAG[exec_functional_unit] == OCCUPIED)):
             self.hazards['Struct'] = True
 
         self.hazards['RAW'] = False
@@ -134,7 +135,8 @@ class Decode_Stage(Pipeline_Stage):
                 self.hazards['RAW'] = True
 
         self.hazards['WAW'] = False
-        if ((self.instruction.destReg != '') and (REGISTER_FLAG[self.instruction.destReg] == OCCUPIED)):
+        if ((self.instruction.destReg != '') and
+            (REGISTER_FLAG[self.instruction.destReg] == OCCUPIED)):
             self.hazards['WAW'] = True
 
 
@@ -146,10 +148,12 @@ class Decode_Stage(Pipeline_Stage):
             if (REGISTER_FLAG[register] == OCCUPIED):
                 return True
 
-        if ((self.instruction.destReg != '') and (REGISTER_FLAG[self.instruction.destReg] == OCCUPIED)):
+        if ((self.instruction.destReg != '') and
+            (REGISTER_FLAG[self.instruction.destReg] == OCCUPIED)):
             return True
 
-        if ((exec_functional_unit != 'NO_UNIT') and (STAGE_FLAG[exec_functional_unit] == OCCUPIED)):
+        if ((exec_functional_unit != 'NO_UNIT') and
+            (STAGE_FLAG[exec_functional_unit] == OCCUPIED)):
             return True
 
         return False
@@ -291,30 +295,38 @@ class Memory_Stage(Execute_Stage):
             if (not self.word_hit[0]):
                 Memory_Stage.bus_access_flag = True
                 self.wait_for_ibus = True
-            if ((not self.word_hit[1]) and (self.word_cycles[0] == 0)):
+            if ((not self.word_hit[1]) and
+                (self.word_cycles[0] == 0)):
                 Memory_Stage.bus_access_flag = True
                 self.wait_for_ibus = True
         else:
             Memory_Stage.bus_access_flag = False
 
-        if ((Memory_Stage.bus_access_flag) and (STAGE_FLAG['IBUS'] == OCCUPIED)):
+        if ((Memory_Stage.bus_access_flag) and
+            (STAGE_FLAG['IBUS'] == OCCUPIED)):
             if (not self.word_hit[0]):
                 self.word_cycles[0] -= 1
             elif (not self.word_hit[1]):
                 self.word_cycles[1] -= 1
 
         if (self.word_cycles[0] == 0):
-            if ((not self.word_hit[1]) and (STAGE_FLAG['IBUS'] == AVAILABLE)):
+            if ((not self.word_hit[1]) and
+                (STAGE_FLAG['IBUS'] == AVAILABLE)):
                 STAGE_FLAG['DBUS'] = OCCUPIED
-            if ((self.word_hit[1]) or (STAGE_FLAG['DBUS'] == OCCUPIED)):
+            if ((self.word_hit[1]) or
+                (STAGE_FLAG['DBUS'] == OCCUPIED)):
                 self.word_cycles[1] -= 1
 
         STAGE_FLAG['MEM'] = OCCUPIED
 
-        if ((not self.word_hit[0]) and (STAGE_FLAG['IBUS'] == AVAILABLE) and (self.word_cycles[0] > 0)):
+        if ((not self.word_hit[0]) and
+            (STAGE_FLAG['IBUS'] == AVAILABLE) and
+            (self.word_cycles[0] > 0)):
             STAGE_FLAG['DBUS'] = OCCUPIED
 
-        if (((self.word_hit[0]) or (STAGE_FLAG['DBUS'] == OCCUPIED)) and (self.word_cycles[0] > 0)):
+        if (((self.word_hit[0]) or
+             (STAGE_FLAG['DBUS'] == OCCUPIED)) and
+            (self.word_cycles[0] > 0)):
             self.word_cycles[0] -= 1
 
 
@@ -322,16 +334,20 @@ class Memory_Stage(Execute_Stage):
         """
         Proceed in the memory stage.
         """
-        if ((not self.word_hit[0]) and (self.word_cycles[0] == 0) and (self.word_hit[1])):
+        if ((not self.word_hit[0]) and
+            (self.word_cycles[0] == 0) and
+            (self.word_hit[1])):
             STAGE_FLAG['DBUS'] = AVAILABLE
 
-        if ((not self.word_hit[1]) and (self.word_cycles[1] == 0)):
+        if ((not self.word_hit[1]) and
+            (self.word_cycles[1] == 0)):
             STAGE_FLAG['DBUS'] = AVAILABLE
 
         if (self.word_cycles[1] < 0):
             self.hazards['Struct'] = True
 
-        if (((self.word_cycles[0] + self.word_cycles[1]) <= 0) and (STAGE_FLAG['WB'] == AVAILABLE)):
+        if (((self.word_cycles[0] + self.word_cycles[1]) <= 0) and
+            (STAGE_FLAG['WB'] == AVAILABLE)):
             STAGE_FLAG['MEM'] = AVAILABLE
             return WriteBack_Stage(self.instruction)
 
@@ -403,7 +419,8 @@ class FP_Adder_Stage(Execute_Stage):
         if FP_CONFIG['FP_ADD']['PIPELINED']:
             STAGE_FLAG['FP_ADD'] = AVAILABLE
 
-        if ((self.clock_cycles <= 0) and (STAGE_FLAG['WB'] == AVAILABLE)):
+        if ((self.clock_cycles <= 0) and
+            (STAGE_FLAG['WB'] == AVAILABLE)):
             STAGE_FLAG['FP_ADD'] = AVAILABLE
             return WriteBack_Stage(self.instruction)
 
@@ -444,7 +461,8 @@ class FP_Multiplier_Stage(Execute_Stage):
         if (FP_CONFIG['FP_MUL']['PIPELINED']):
             STAGE_FLAG['FP_MUL'] = AVAILABLE
 
-        if ((self.clock_cycles <= 0) and (STAGE_FLAG['WB'] == AVAILABLE)):
+        if ((self.clock_cycles <= 0) and
+            (STAGE_FLAG['WB'] == AVAILABLE)):
             STAGE_FLAG['FP_MUL'] = AVAILABLE
             return WriteBack_Stage(self.instruction)
 
@@ -485,7 +503,8 @@ class FP_Divider_Stage(Execute_Stage):
         if (FP_CONFIG['FP_DIV']['PIPELINED']):
             STAGE_FLAG['FP_DIV'] = AVAILABLE
 
-        if ((self.clock_cycles <= 0) and (STAGE_FLAG['WB'] == AVAILABLE)):
+        if ((self.clock_cycles <= 0) and
+            (STAGE_FLAG['WB'] == AVAILABLE)):
             STAGE_FLAG['FP_DIV'] = AVAILABLE
             return WriteBack_Stage(self.instruction)
 

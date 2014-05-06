@@ -15,8 +15,15 @@ class Output():
         Initialize the output.
         """
         self.instruction = instruction
-        self.cycles = {'IF': cycle, 'ID': 0, 'EX': 0, 'WB': 0}
-        self.hazards = {'RAW': False, 'WAR': False, 'WAW': False, 'Struct': False}
+
+        self.cycles = {}
+        for stage in STAGES:
+            self.cycles[stage] = 0
+        self.cycles[STAGES[0]] = cycle
+
+        self.hazards = {}
+        for hazard in HAZARDS:
+            self.hazards[hazard] = False
 
 
     def toString(self, isLast):

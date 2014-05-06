@@ -30,7 +30,7 @@ class Instruction():
         return self.name  + ' ' + ', '.join(self.operands)
 
         
-    def getType(self):
+    def get_instruction_type(self):
         """
         Return the type of the instruction.
         """
@@ -97,11 +97,11 @@ class Instruction():
             self.srcRegs = operands[1:]
 
             
-    def update_imm(self, address):
+    def update_imm(self, location):
         """
         Update the immediate value.
         """
-        self.imm = address
+        self.imm = location
 
 
     def determine_exec_functional_unit(self):
