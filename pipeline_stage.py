@@ -170,8 +170,8 @@ class Decode_Stage(Pipeline_Stage):
 
         if ((self.instruction.name == 'beq') and
             (REGISTERS[self.instruction.srcRegs[0]] == REGISTERS[self.instruction.srcRegs[1]])):
-            REGISTER['PC'] = self.instruction.imm / WORD_SIZE
-            REGISTER['CLEAN'] = True
+            REGISTERS['PC'] = self.instruction.imm / WORD_SIZE
+            REGISTERS['CLEAN'] = True
             return    
 
         if ((self.instruction.name == 'bne') and
@@ -478,7 +478,7 @@ class FP_Divider_Stage(Execute_Stage):
         """
         Initialize FP Divider stage.
         """
-        ExecuteStage.__init__(self, instruction)
+        Execute_Stage.__init__(self, instruction)
         self.clock_cycles = FP_CONFIG['FP_DIV']['CYCLES']
 
 

@@ -58,12 +58,12 @@ class Data_Cache():
         Write to the data cache.
         """
         Data_Cache.requests += 1
-        location -= MEMORY_BASE_ADDRESS
+        location -= DATA_MEMORY_BASE_ADDRESS
         block_id = (location >> NUMBER_OF_CACHE_BLOCKS) % NUMBER_OF_CACHE_SETS
         write_cycles = 0
 
         for id in range(NUMBER_OF_CACHE_SETS):
-            if Data_Cache.lookup_address_in_set(lookup_address_in_set, id):
+            if Data_Cache.lookup_address_in_set(location, id):
                 Data_Cache.hits += 1
                 Data_Cache.use_for_lru(block_id, id)
                 Data_Cache.write_data(location, id, data, isWritable)
@@ -134,7 +134,7 @@ class Data_Cache():
 
     @classmethod
     def write_data(self, location, set_id, data, isWritable):
-        block_id = (address >> NUMBER_OF_CACHE_BLOCKS) % NUMBER_OF_CACHE_SETS
+        block_id = (location >> NUMBER_OF_CACHE_BLOCKS) % NUMBER_OF_CACHE_SETS
         Data_Cache.cache_sets[set_id].cache_block[block_id].dirty_bit = True
         if isWritable:
             Data_Cache.cache_sets[set_id].cache_block[block_id].words[(location & 12) >> NUMBER_OF_CACHE_SETS] = data
