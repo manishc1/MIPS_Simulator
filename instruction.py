@@ -29,7 +29,7 @@ class Instruction():
         """
         Convert to string representation.
         """
-        return self.name  + ' ' + ', '.join(self.operands)
+        return self.name  + ' ' + ','.join(self.operands)
 
         
     def get_instruction_type(self):
