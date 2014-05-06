@@ -66,10 +66,10 @@ class Fetch_Stage(Pipeline_Stage):
             STAGE_FLAG['IBUS'] = AVAILABLE
             
         if (self.clock_cycles <= 0):
-            if (REGISTERS['FLUSH']):
+            if (REGISTERS['CLEAN']):
                 STAGE_FLAG[self.name] = AVAILABLE
                 STAGE_FLAG['IBUS'] = AVAILABLE
-                REGISTERS['FLUSH'] = False
+                REGISTERS['CLEAN'] = False
                 return None
             if (STAGE_FLAG['ID'] == AVAILABLE):
                 STAGE_FLAG[self.name] = AVAILABLE
@@ -161,19 +161,19 @@ class Decode_Stage(Pipeline_Stage):
         """
         if (self.instruction.name == 'j'):
             REGISTERS['PC'] = self.instruction.imm / WORD_SIZE
-            REGISTERS['FLUSH'] = True
+            REGISTERS['CLEAN'] = True
             return
 
         if ((self.instruction.name == 'beq') and
             (REGISTERS[self.instruction.srcRegs[0]] == REGISTERS[self.instruction.srcRegs[1]])):
             REGISTER['PC'] = self.instruction.imm / WORD_SIZE
-            REGISTER['FLUSH'] = True
+            REGISTER['CLEAN'] = True
             return    
 
         if ((self.instruction.name == 'bne') and
             (REGISTERS[self.instruction.srcRegs[0]] != REGISTERS[self.instruction.srcRegs[1]])):
             REGISTERS['PC'] = self.instruction.imm / WORD_SIZE
-            REGISTERS['FLUSH'] = True
+            REGISTERS['CLEAN'] = True
 
 
     def select_execution_stage(self, exec_functional_unit):
