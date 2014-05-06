@@ -4,6 +4,8 @@ Representation details of an instructions.
 
 from computer import *
 
+import re
+
 
 class Instruction():
     """
@@ -43,7 +45,7 @@ class Instruction():
         elif (self.name in MISC_INSTRUCTIONS):
             return 'MISC'
         else:
-            raise Exception('Unknown instruction encountered')
+            raise Exception('')
 
 
     def split_operands(self):
@@ -95,6 +97,25 @@ class Instruction():
             self.imm = operands[0]
         else:
             self.srcRegs = operands[1:]
+
+        register_pattern = "^[rf]\d+$"
+        constant_pattern = "^\d+$"
+
+        if (self.name in DESTFUL_INSTRUCTIONS):
+            if (re.match(register_pattern, self.destReg) == None):
+                raise Exception(': invalid destination register[' + self.destReg + ']')
+
+        if (self.name in LOAD_INSTRUCTIONS + STORE_INSTRUCTIONS):
+            if (re.match(constant_pattern, self.offset) == None):
+                raise Exception(': invalid offset')
+
+        if (self.name in IMMEDIATE_ALU_INSTRUCTIONS + BRANCH_INSTRUCTIONS):
+            if (self.imm == ''):
+                raise Exception(': missing label')
+
+        for srcReg in self.srcRegs:
+            if (re.match(register_pattern, srcReg) == None):
+                raise Exception(': invalid source register')
 
             
     def update_imm(self, location):

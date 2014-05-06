@@ -26,7 +26,7 @@ class Output():
             self.hazards[hazard] = False
 
 
-    def toString(self, isLast):
+    def __str__(self):
         """
         Convert to string representation.
         """
@@ -42,9 +42,6 @@ class Output():
                 string += '\t' + str(self.cycles[stage]) + '\t'
             else:
                 string += '\t\t'
-
-        if (isLast):
-            return string
 
         for hazard in HAZARDS:
             if (self.hazards[hazard]):
