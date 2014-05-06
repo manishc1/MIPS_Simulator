@@ -28,10 +28,7 @@ class Printer():
         string += '\n'
 
         for i in range(len(result)):
-            if (i == len(result)-1):
-                string += result[i].toString(True) + '\n'
-            else:
-                string += result[i].toString(False) + '\n'
+            string += str(result[i]) + '\n'
 
         string += '\nTotal number of requests to instruction cache  ' + str(Instruction_Cache.requests)
         string += '\nTotal number of instruction cache hit  ' + str(Instruction_Cache.hits)
