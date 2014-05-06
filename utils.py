@@ -21,8 +21,8 @@ def writeString(fileName, string):
     """
     try:
         f = open(fileName, 'w')
-        file.write(string)
-        file.close()
+        f.write(string)
+        f.close()
     except:
         print 'File write error!'
 

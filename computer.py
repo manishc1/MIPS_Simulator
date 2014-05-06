@@ -12,8 +12,7 @@ OCCUPIED = True
 HIT = True
 MISS = False
 
-MAX = 100
-
+LIMIT = 100
 
 
 # ALU Instructions
@@ -39,20 +38,16 @@ MISC_INSTRUCTIONS = ['hlt']
 DESTFUL_INSTRUCTIONS = LOAD_INSTRUCTIONS + ALU_INSTRUCTIONS
 
 
-
 # Hazards
 HAZARDS = ['RAW', 'WAR', 'WAW', 'Struct']
-
 
 
 # Stages
 STAGES = ['IF', 'ID', 'EX', 'WB']
 
 
-
 # Floating Point functional units
 FP_UNITS = ['FP_ADD', 'FP_MUL', 'FP_DIV']
-
 
 
 # Some computer constants
@@ -60,12 +55,10 @@ DATA_MEMORY_BASE_ADDRESS = 256
 WORD_SIZE = 4
 
 
-
 # Cache constants
 CACHE_BLOCK_SIZE = 4
 NUMBER_OF_CACHE_BLOCKS = 4
 NUMBER_OF_CACHE_SETS = 2
-
 
 
 # State of the computer and program
@@ -88,6 +81,5 @@ STAGE_FLAG = {
     }
 
 
-
 # Formatting constants
-INSTRUCTION_LEFT_JUSTIFY = 31
+INSTRUCTION_LEFT_JUSTIFY = 30

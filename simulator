@@ -9,6 +9,7 @@ from computer import *
 from data_cache import *
 from instruction_cache import *
 from instruction_container import *
+from instruction_organizer import *
 from printer import *
 from scanner import *
 
@@ -19,97 +20,21 @@ import sys
 output = []
 
 
-def write_back_organize(new_instruction_containers, exe_instruction_containers):
-    priority = {}
-    count = MAX
-
-    for i in range(len(exe_instruction_containers)):
-        exe = exe_instruction_containers.pop()
-
-        functional_unit = exe.instruction.determine_exec_functional_unit()
-
-        is_fp_flag = False
-        for fu in FP_UNITS:
-            if (functional_unit == fu):
-                if (FP_CONFIG[fu]['PIPELINED']):
-                    priority[exe] = count + FP_CONFIG[fu]['CYCLES']
-                else:
-                    priority[exe] = count + FP_CONFIG[fu]['CYCLES'] + MAX
-                is_fp_flag = True
-                break
-        if (not is_fp_flag):
-            priority[exe] = count
-
-        count -= 1
-
-    sorted_x = sorted(priority.iteritems(), key=operator.itemgetter(1), reverse=True)
-    for element in sorted_x:
-        new_instruction_containers.appendleft(element[0])
-
-    return new_instruction_containers
-
-
-def organize(old_instruction_containers):
-    """
-    Organize instructions in WB - EX - ID - IF manner.
-    """
-    new_instruction_containers = deque([])
-
-    for i in range(len(old_instruction_containers)):
-        ic = old_instruction_containers.pop()
-        if ic.current_pipeline_stage.name == 'WB':
-            new_instruction_containers.appendleft(ic)
-        else:
-            old_instruction_containers.appendleft(ic)
-
-    exe_instruction_containers = deque([])
-    for i in range(len(old_instruction_containers)):
-        ic = old_instruction_containers.pop()
-        if ic.current_pipeline_stage.name == 'EX':
-            exe_instruction_containers.appendleft(ic)
-        else:
-            old_instruction_containers.appendleft(ic)
-
-    new_instruction_containers = write_back_organize(new_instruction_containers, exe_instruction_containers)
-
-    for i in range(len(old_instruction_containers)):
-        ic = old_instruction_containers.pop()
-        if ic.current_pipeline_stage.name == 'ID':
-            new_instruction_containers.appendleft(ic)
-        else:
-            old_instruction_containers.appendleft(ic)
-
-    for i in range(len(old_instruction_containers)):
-        ic = old_instruction_containers.pop()
-        if ic.current_pipeline_stage.name == 'IF':
-            new_instruction_containers.appendleft(ic)
-        else:
-            old_instruction_containers.appendleft(ic)
-
-    return new_instruction_containers
-
-
-def init_cache():
-    """
-    Initialize instruction and data cache.
-    """
-    Instruction_Cache()
-    Data_Cache()
-
-
 def simulate():
     """
     Simulate the execution of the instructions.
     """
-    init_cache()
+    Instruction_Cache()
+    Data_Cache()
 
     clock_cycle = 1
-    REGISTERS['PC'] = 1
     
     active_instruction_containers = deque([Instruction_Container(INSTRUCTIONS[0], clock_cycle)])
 
+    REGISTERS['PC'] = 1
+
     while (len(active_instruction_containers) > 0):
-        active_instruction_containers = organize(active_instruction_containers)
+        active_instruction_containers = Instruction_Organizer.organize(active_instruction_containers)
         future_instruction_containers = deque([])
 
         while (len(active_instruction_containers) > 0):

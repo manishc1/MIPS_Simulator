@@ -38,5 +38,5 @@ class Printer():
         string += '\nTotal number of requests to data cache  ' + str(Data_Cache.requests)
         string += '\nTotal number of data cache hit  ' + str(Data_Cache.hits)
 
-        #writeString(fileName)
-        print string
+        writeString(fileName, string)
+        #print string
