@@ -77,37 +77,66 @@ class Instruction():
             # Instructions with no operands.
             return
 
+        if (((self.name in UNCONDITIONAL_BRANCH_INSTRUCTIONS) and
+             (len(operands) > 1)) or
+            ((self.name not in UNCONDITIONAL_BRANCH_INSTRUCTIONS) and
+             (len(operands) > 3))):
+            raise Exception(': more than expected offsets or registers mentioned')
+
         if (self.name in DESTFUL_INSTRUCTIONS):
             # Instructions that have destination.
-            self.destReg = operands[0]
+            if (len(operands) > 0):
+                self.destReg = operands[0]
+            else:
+                raise Exception(': missing destination register')
 
         if (self.name in LOAD_INSTRUCTIONS):
-            self.offset = operands[1]
-            self.srcRegs = [operands[2]]
+            if (len(operands) == 3):
+                self.offset = operands[1]
+                self.srcRegs = [operands[2]]
+            else:
+                raise Exception(': missing offset or source register')
         elif (self.name in STORE_INSTRUCTIONS):
-            self.offset = operands[1]
-            self.srcRegs = [operands[0], operands[2]]
+            if (len(operands) == 3):
+                self.offset = operands[1]
+                self.srcRegs = [operands[0], operands[2]]
+            else:
+                raise Exception(': missing offset or source register')
         elif (self.name in IMMEDIATE_ALU_INSTRUCTIONS):
-            self.srcRegs = [operands[1]]
-            self.imm = operands[2]
+            if (len(operands) == 3):
+                self.srcRegs = [operands[1]]
+                self.imm = operands[2]
+            else:
+                raise Exception(': missing offset or source register')
         elif (self.name in CONDITIONAL_BRANCH_INSTRUCTIONS):
-            self.srcRegs = operands[:2]
-            self.imm = operands[2]
-        elif self.name in UNCONDITIONAL_BRANCH_INSTRUCTIONS:
-            self.imm = operands[0]
+            if (len(operands) == 3):
+                self.srcRegs = operands[:2]
+                self.imm = operands[2]
+            else:
+                raise Exception(': missing immediate or source register')
+        elif (self.name in UNCONDITIONAL_BRANCH_INSTRUCTIONS):
+            if (len(operands) == 1):
+                self.imm = operands[0]
+            else:
+                raise Exception(': missing immediate')
+        elif (self.name in INTEGER_ALU_INSTRUCTIONS + FLOAT_ALU_INSTRUCTIONS):
+            if (len(operands) == 3):
+                self.srcRegs = operands[1:]
+            else:
+                raise Exception(': missing source register')
         else:
-            self.srcRegs = operands[1:]
+            raise Exception(': invalid instruction name <' + self.name + '>')
 
         register_pattern = "^[rf]\d+$"
         constant_pattern = "^\d+$"
 
         if (self.name in DESTFUL_INSTRUCTIONS):
             if (re.match(register_pattern, self.destReg) == None):
-                raise Exception(': invalid destination register[' + self.destReg + ']')
+                raise Exception(': invalid destination register <' + self.destReg + '>')
 
         if (self.name in LOAD_INSTRUCTIONS + STORE_INSTRUCTIONS):
             if (re.match(constant_pattern, self.offset) == None):
-                raise Exception(': invalid offset')
+                raise Exception(': invalid offset <' + self.offset + '>')
 
         if (self.name in IMMEDIATE_ALU_INSTRUCTIONS + BRANCH_INSTRUCTIONS):
             if (self.imm == ''):
@@ -115,7 +144,7 @@ class Instruction():
 
         for srcReg in self.srcRegs:
             if (re.match(register_pattern, srcReg) == None):
-                raise Exception(': invalid source register')
+                raise Exception(': invalid source register <' + srcReg + '>')
 
             
     def update_imm(self, location):
