@@ -87,7 +87,7 @@ class Data_Cache():
         tag = location >> 5
         block_id = (location >> NUMBER_OF_CACHE_BLOCKS) % NUMBER_OF_CACHE_SETS
 
-        if ((Data_Cache.cache_sets[id].cache_block[block_id.valid_bit]) and
+        if ((Data_Cache.cache_sets[id].cache_block[block_id].valid_bit) and
             (Data_Cache.cache_sets[id].cache_block[block_id].tag == tag)):
             return True
 

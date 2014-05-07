@@ -5,7 +5,7 @@ Wrapper that wraps the instruction for passing between the stages in the pipelin
 from computer import *
 from output import *
 
-import pipeline_stage
+import pipeline_fetch_stage
 
 
 class Instruction_Container():
@@ -17,7 +17,7 @@ class Instruction_Container():
         """
         Initialize the container.
         """
-        self.current_pipeline_stage = pipeline_stage.Fetch_Stage(instruction)
+        self.current_pipeline_stage = pipeline_fetch_stage.Fetch_Stage(instruction)
         self.instruction = instruction
         self.current_pipeline_stage.execute(self.instruction)
         self.output = Output(instruction, clock_cycle)
