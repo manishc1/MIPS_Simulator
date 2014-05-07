@@ -10,7 +10,11 @@ def readLines(fileName):
         f = open(fileName, 'r')
         lines = [line for line in f]
         f.close()
-        return lines
+        newlines = []
+        for line in lines:
+            if (len(line.strip()) != 0):
+                newlines.append(line)
+        return newlines
     except:
         print 'File read error!'
 
