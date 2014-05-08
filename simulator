@@ -64,7 +64,11 @@ def main(instFile, dataFile, regFile, configFile, resultFile):
         Scanner.scan_registers(regFile)
         Scanner.scan_configuration(configFile)
     except Exception as e:
-        print 'Error: ' + str(e)
+        string = 'Error: ' + str(e)
+        try:
+            writeString(resultFile, string)
+        except Exception as e:
+            print 'Error: ' + str(e)
         exit()
 
     simulate()
